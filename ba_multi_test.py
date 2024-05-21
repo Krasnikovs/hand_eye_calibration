@@ -38,16 +38,16 @@ class Optimizer():
     def __init__(self, files, path):
         self.path = path
         self.files = files
-        self.gui = Gui()
+        
 
-    def show_image(self, current_estimated_pixel):
+    def show_image(self, current_estimated_pixel, gui):
 
         for i, file in enumerate(self.files):
             npzfile = (np.load(f'./{self.path}/{file}'))
             image = npzfile['arr_2']
-            self.gui.image_visualization(current_estimated_pixel[i], image)
+            gui.image_visualization(current_estimated_pixel[i], image)
 
-    def save_yaml(self, calib):
+    def save_yaml(self, calib, world_base_pose):
         npzfile = np.load(f'./{self.path}/{self.files[0]}')
         camera_info = npzfile['arr_3']
 
@@ -56,13 +56,43 @@ class Optimizer():
                 calib_matric = calib,
                 resolution = camera_info.resolution,
                 rostopic = camera_info.topic
+            ),
+            base = dict(
+                robot_base_matric = world_base_pose
             )
         )
 
         with open('calib_data.yaml', 'w') as outfile:
             yaml.dump(calib_data, outfile, default_flow_style=False)
 
-    def optimize(self):
+    def debug(self, camera_robot_vertex, current_estimated_pixel, camera_extrs, measured_tool0_extrs):
+        gui = Gui()
+
+        gui.draw_transform(gui.world_id())
+        
+        calib = gui.transform(camera_robot_vertex.estimate().matrix())
+        print(calib)
+        
+        
+        for est, camera_extr, measured_tool0_extr in zip(current_estimated_pixel[:2], camera_extrs[:2], measured_tool0_extrs[:2]):
+            
+            measured_tool0_pose = gui.transform(measured_tool0_extr.matrix()).inv()
+            optimized_camera_pose = gui.transform(camera_extr.estimate().matrix()).inv()
+
+            world_base_pose = optimized_camera_pose @ calib.inv() @ measured_tool0_pose.inv()
+            world_robot_pose = world_base_pose @ measured_tool0_pose
+            
+            gui.draw_transform(optimized_camera_pose, c_i=0) # red
+            
+            gui.draw_transform(world_robot_pose, c_i=2) # blue
+            
+        gui.draw_transform(world_base_pose, c_i=1) # green
+
+        
+
+        self.show_image(current_estimated_pixel, gui)
+
+    def optimize(self, answer):
         
         npzfile = []
         q = []
@@ -162,7 +192,10 @@ class Optimizer():
                 optimizer.add_edge(relative_pose)
 
         optimizer.initialize_optimization()
-        optimizer.set_verbose(True)
+        if answer == 'y' or answer == 'Y':
+            optimizer.set_verbose(True)
+        else:
+            optimizer.set_verbose(False)
         optimizer.optimize(100)
         
 
@@ -179,33 +212,16 @@ class Optimizer():
 
     def main(self):
         
-        camera_extrs, current_estimated_pixel, camera_robot_vertex, measured_tool0_extrs = self.optimize()
+        print('debug mode(y/n):')
+        answer = input()
 
-        self.gui.draw_transform(self.gui.world_id())
-        
-        calib = self.gui.transform(camera_robot_vertex.estimate().matrix())
-        print(calib)
-        
-        
-        for i, (est, camera_extr, measured_tool0_extr) in enumerate(zip(current_estimated_pixel[:2], camera_extrs[:2], measured_tool0_extrs[:2])):
-            
-            measured_tool0_pose = self.gui.transform(measured_tool0_extr.matrix()).inv()
-            optimized_camera_pose = self.gui.transform(camera_extr.estimate().matrix()).inv()
-
-            world_base_pose = optimized_camera_pose @ calib.inv() @ measured_tool0_pose.inv()
-            world_robot_pose = world_base_pose @ measured_tool0_pose
-            
-            self.gui.draw_transform(optimized_camera_pose, c_i=0) # red
-            
-            self.gui.draw_transform(world_robot_pose, c_i=2) # blue
-            
-        self.gui.draw_transform(world_base_pose, c_i=1) # green
+        camera_extrs, current_estimated_pixel, camera_robot_vertex, measured_tool0_extrs = self.optimize(answer)
 
         
-
-        self.show_image(current_estimated_pixel)
-
-        print(' ')
+        if answer == 'y' or answer == 'Y':
+            self.debug(camera_robot_vertex, current_estimated_pixel, camera_extrs, measured_tool0_extrs)
+        else:
+            pass
 
 def main():
     path = './photo/13_5'
