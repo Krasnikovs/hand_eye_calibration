@@ -34,7 +34,7 @@ class ImageInfoSubscriber(Node):
         super().__init__('subscriber')
         self.subscription = self.create_subscription(
             String,
-            '/color/data_raw',
+            '/color/camera_info',
             self.listener_callback,
             10
         )
@@ -74,7 +74,7 @@ class PoseSubscriber(Node):
         return t
 
 
-def SaveNpz(t, image_sub, image_data_sub):
+def save_npz(t, image_sub, image_data_sub):
     transform = t.transform
     vector = np.array([transform.translation.x, transform.translation.y, transform.translation.z])
     quaternion = np.array([transform.rotation.x, transform.rotation.y, transform.rotation.z, transform.rotation.w])
@@ -101,7 +101,7 @@ def main(args=None):
             t = pose_sub.listener()
             rclpy.spin_once(image_sub)
             rclpy.spin_once(image_data_sub)
-            SaveNpz(t, image_sub, image_data_sub)
+            save_npz(t, image_sub, image_data_sub)
 
         if key == Key.delete:
             return False
