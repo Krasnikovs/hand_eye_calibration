@@ -97,8 +97,8 @@ def main(args=None):
     def look(key):
         if key == Key.space:
             t = None
-            
             t = pose_sub.listener()
+            
             rclpy.spin_once(image_sub)
             rclpy.spin_once(image_data_sub)
             save_npz(t, image_sub, image_data_sub)

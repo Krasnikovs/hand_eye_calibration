@@ -86,8 +86,7 @@ class Optimizer():
         print(calib)
         
         
-        # for est, camera_extr, measured_tool0_extr in zip(current_estimated_pixel[:2], camera_extrs[:2], measured_tool0_extrs[:2]):
-        for (est, camera_extr, measured_tool0_extr) in zip(current_estimated_pixel, camera_extrs, measured_tool0_extrs):
+        for est, camera_extr, measured_tool0_extr in zip(current_estimated_pixel[:2], camera_extrs[:2], measured_tool0_extrs[:2]):
             measured_tool0_pose = gui.transform(measured_tool0_extr.matrix()).inv()
             optimized_camera_pose = gui.transform(camera_extr.estimate().matrix()).inv()
 
@@ -100,9 +99,22 @@ class Optimizer():
             
         gui.draw_transform(world_base_pose, c_i=1) # green
 
-        self.save_yaml(calib, world_base_pose)
-
         self.show_image(current_estimated_pixel, gui)
+
+        return calib, world_base_pose
+
+    def yaml_info(self, camera_robot_vertex, camera_extrs, measured_tool0_extrs):
+        gui = Gui()
+
+        calib = gui.transform(camera_robot_vertex.estimate().matrix())
+        print(calib)
+        
+        measured_tool0_pose = gui.transform(measured_tool0_extrs[0].matrix()).inv()
+        optimized_camera_pose = gui.transform(camera_extrs[0].estimate().matrix()).inv()
+
+        world_base_pose = optimized_camera_pose @ calib.inv() @ measured_tool0_pose.inv()
+
+        return calib, world_base_pose
 
     def optimize(self, answer):
         
@@ -231,9 +243,11 @@ class Optimizer():
 
         
         if answer == 'y' or answer == 'Y':
-            self.debug(camera_robot_vertex, current_estimated_pixel, camera_extrs, measured_tool0_extrs)
+            calib, world_base_pose = self.debug(camera_robot_vertex, current_estimated_pixel, camera_extrs, measured_tool0_extrs)
         else:
-            pass
+            calib, world_base_pose = self.yaml_info(camera_robot_vertex, camera_extrs, measured_tool0_extrs)
+
+        self.save_yaml(calib, world_base_pose)
 
 def main():
     path = './photo'
