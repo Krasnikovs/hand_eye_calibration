@@ -49,21 +49,33 @@ class Optimizer():
 
     def save_yaml(self, calib, world_base_pose):
         npzfile = np.load(f'./{self.path}/{self.files[0]}')
-        camera_info = npzfile['arr_3']
+        resolution = npzfile['arr_3']
+        rostopic = npzfile['arr_4']
 
-        calib_data = dict(
-            calib = dict(
-                calib_matric = calib,
-                resolution = camera_info.resolution,
-                rostopic = camera_info.topic
-            ),
-            base = dict(
-                robot_base_matric = world_base_pose
-            )
-        )
+        calib_data = {
+            'calib' : [
+                {
+                    'calib_matric' : [f'{calib._pose[0]}', f'{calib._pose[1]}', f'{calib._pose[2]}', f'{calib._pose[3]}']
+                },
+                {
+                    'resolution' : f'{resolution[0][0], resolution[1][0]}'
+                },
+                {
+                    'ros_topic' : f'{rostopic}'
+                }
+            ],
+            'base_pose' : [
+                {
+                    'base_matric' : [f'{world_base_pose._pose[0]}', f'{world_base_pose._pose[1]}', f'{world_base_pose._pose[2]}', f'{world_base_pose._pose[3]}']
+                }
+            ]
+        }
 
-        with open('calib_data.yaml', 'w') as outfile:
-            yaml.dump(calib_data, outfile, default_flow_style=False)
+        file_name = 'calib'
+        load = yaml.safe_load(f'./unit_test/{file_name}.yaml')
+
+        with open(load, 'w') as outfile:
+            yaml.dump(calib_data, outfile)
 
     def debug(self, camera_robot_vertex, current_estimated_pixel, camera_extrs, measured_tool0_extrs):
         gui = Gui()
@@ -74,8 +86,8 @@ class Optimizer():
         print(calib)
         
         
-        for est, camera_extr, measured_tool0_extr in zip(current_estimated_pixel[:2], camera_extrs[:2], measured_tool0_extrs[:2]):
-            
+        # for est, camera_extr, measured_tool0_extr in zip(current_estimated_pixel[:2], camera_extrs[:2], measured_tool0_extrs[:2]):
+        for (est, camera_extr, measured_tool0_extr) in zip(current_estimated_pixel, camera_extrs, measured_tool0_extrs):
             measured_tool0_pose = gui.transform(measured_tool0_extr.matrix()).inv()
             optimized_camera_pose = gui.transform(camera_extr.estimate().matrix()).inv()
 
@@ -88,7 +100,7 @@ class Optimizer():
             
         gui.draw_transform(world_base_pose, c_i=1) # green
 
-        
+        self.save_yaml(calib, world_base_pose)
 
         self.show_image(current_estimated_pixel, gui)
 
@@ -129,7 +141,7 @@ class Optimizer():
         solver = g2o.OptimizationAlgorithmLevenberg(solver)
         optimizer.set_algorithm(solver)
 
-        camera_projection_model = g2o.CameraParameters(613, (320, 240), 0)
+        camera_projection_model = g2o.CameraParameters(613, (321, 241), 0)
         camera_projection_model.set_id(0)
         optimizer.add_parameter(camera_projection_model)
 
@@ -224,7 +236,7 @@ class Optimizer():
             pass
 
 def main():
-    path = './photo/13_5'
+    path = './photo'
     files = os.listdir(path)
     files = [f for f in files if '.npz' in f]
     opt = Optimizer(files, path)
