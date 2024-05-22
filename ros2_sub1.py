@@ -1,8 +1,7 @@
 import rclpy
 from rclpy.node import Node
 
-from sensor_msgs.msg import Image
-from std_msgs.msg import String
+from sensor_msgs.msg import Image, CameraInfo
 
 import cv2
 from pynput.keyboard import Key, Listener
@@ -31,16 +30,16 @@ class ImageSubscriber(Node):
 
 class ImageInfoSubscriber(Node):
     def __init__(self):
-        super().__init__('subscriber')
+        super().__init__('data_subscriber')
         self.subscription = self.create_subscription(
-            String,
+            CameraInfo,
             '/color/camera_info',
             self.listener_callback,
             10
         )
         self.subscription
 
-    def listerner_callback(self, msg):
+    def listener_callback(self, msg):
         self.msg = msg
 
 class PoseSubscriber(Node):
@@ -82,9 +81,10 @@ def save_npz(t, image_sub, image_data_sub):
     bridge = CvBridge()
     image = bridge.imgmsg_to_cv2(image_sub.msg, desired_encoding='bgr8')
     
-    image_data = image_data_sub
+    image_resolution = np.array([[image_data_sub.msg.width], [image_data_sub.msg.height]])
+    image_ros_topic = '/color/image_raw'
     
-    np.savez(f'./photo/test_{image_sub.msg.header.stamp.sec}', vector, quaternion, image)
+    np.savez(f'./photo/test_{image_sub.msg.header.stamp.sec}', vector, quaternion, image, image_resolution, image_ros_topic) 
 
 
 def main(args=None):
