@@ -2,7 +2,7 @@
 
 ## Requirements
 * ROS2 (https://docs.ros.org/en/iron/Installation.html)
-* [g2opy]([submodule "g2opy"])
+* [g2opy](https://github.com/Krasnikovs/g2opy.git)
 
 ## Setup
 ```
