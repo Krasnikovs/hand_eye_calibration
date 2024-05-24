@@ -5,6 +5,6 @@
 * [g2opy]
 
 ## Setup
-'''
+```
 pip install -r requirements.txt
-'''
+```
