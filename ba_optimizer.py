@@ -47,32 +47,7 @@ class Optimizer():
             npzfile = (np.load(f'./{self.path}/{file}'))
             image = npzfile['arr_2']
             gui.image_visualization(current_estimated_pixel[i], image)
-
-    def quaternion_to_euler_angle_vectorized1(self, Quaternion):
-        w = Quaternion.w()
-        x = Quaternion.x()
-        y = Quaternion.y()
-        z = Quaternion.z()
-        
-        ysqr = y * y
-
-        t0 = +2.0 * (w * x + y * z)
-        t1 = +1.0 - 2.0 * (x * x + ysqr)
-        # X = np.degrees(np.arctan2(t0, t1))
-        X = np.arctan2(t0, t1)
-
-        t2 = +2.0 * (w * y - z * x)
-
-        t2 = np.clip(t2, a_min=-1.0, a_max=1.0)
-        # Y = np.degrees(np.arcsin(t2))
-        Y = np.arcsin(t2)
-
-        t3 = +2.0 * (w * z + x * y)
-        t4 = +1.0 - 2.0 * (ysqr + z * z)
-        # Z = np.degrees(np.arctan2(t3, t4))
-        Z = np.arctan2(t3, t4)
-
-        return X, Y, Z
+            
 
     def save_yaml(self, calib, world_base_pose):
         npzfile = np.load(f'./{self.path}/{self.files[0]}')
@@ -99,7 +74,7 @@ class Optimizer():
         }
 
 
-        file_name = 'calib_rpy'
+        file_name = 'calib'
         load = yaml.safe_load(f'./unit_test/{file_name}.yaml')
 
         with open(load, 'w') as outfile:
@@ -158,10 +133,6 @@ class Optimizer():
             t.append(np.array([npzfile[i]['arr_0']]))
             images.append(npzfile[i]['arr_2'])
 
-
-        n_points_x_axis = 8
-        n_points_y_axis = 5
-
         for i in range(len(self.files)):
             quaternion = g2o.Quaternion(q[i][0][3], q[i][0][0], q[i][0][1], q[i][0][2])
             extr_estimate_from_robot.append(g2o.SE3Quat(q = quaternion, t = t[i][0]))
@@ -172,7 +143,7 @@ class Optimizer():
         current_estimated_pixel = []
         for i in range(len(self.files)):
             current_estimated_pixel.append([])
-        point_id = n_points_x_axis * n_points_y_axis
+        point_id = 40
 
         optimizer = g2o.SparseOptimizer()
         solver = g2o.BlockSolverSE3(g2o.LinearSolverEigenSE3())
@@ -266,7 +237,6 @@ class Optimizer():
         answer = input()
 
         camera_extrs, current_estimated_pixel, camera_robot_vertex, measured_tool0_extrs = self.optimize(answer)
-
         
         if answer == 'y' or answer == 'Y':
             calib, world_base_pose = self.debug(camera_robot_vertex, current_estimated_pixel, camera_extrs, measured_tool0_extrs)
@@ -279,9 +249,12 @@ def main():
     path = './photo'
     files = os.listdir(path)
     files = [f for f in files if '.npz' in f]
-    opt = Optimizer(files, path)
-    opt.main()
-    print(' ')
+    if files == None:
+        print('No files, no optimization')
+    else:
+        opt = Optimizer(files, path)
+        opt.main()
+    print('Done')
 
 if __name__ == "__main__":
     main()
