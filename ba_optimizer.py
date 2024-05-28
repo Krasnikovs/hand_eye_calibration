@@ -10,6 +10,7 @@ import os
 
 import yaml
 
+
 parser = argparse.ArgumentParser()
 parser.add_argument(
     "--noise",
@@ -47,6 +48,32 @@ class Optimizer():
             image = npzfile['arr_2']
             gui.image_visualization(current_estimated_pixel[i], image)
 
+    def quaternion_to_euler_angle_vectorized1(self, Quaternion):
+        w = Quaternion.w()
+        x = Quaternion.x()
+        y = Quaternion.y()
+        z = Quaternion.z()
+        
+        ysqr = y * y
+
+        t0 = +2.0 * (w * x + y * z)
+        t1 = +1.0 - 2.0 * (x * x + ysqr)
+        # X = np.degrees(np.arctan2(t0, t1))
+        X = np.arctan2(t0, t1)
+
+        t2 = +2.0 * (w * y - z * x)
+
+        t2 = np.clip(t2, a_min=-1.0, a_max=1.0)
+        # Y = np.degrees(np.arcsin(t2))
+        Y = np.arcsin(t2)
+
+        t3 = +2.0 * (w * z + x * y)
+        t4 = +1.0 - 2.0 * (ysqr + z * z)
+        # Z = np.degrees(np.arctan2(t3, t4))
+        Z = np.arctan2(t3, t4)
+
+        return X, Y, Z
+
     def save_yaml(self, calib, world_base_pose):
         npzfile = np.load(f'./{self.path}/{self.files[0]}')
         resolution = npzfile['arr_3']
@@ -55,7 +82,7 @@ class Optimizer():
         calib_data = {
             'calib' : [
                 {
-                    'calib_matric' : [f'{calib._pose[0]}', f'{calib._pose[1]}', f'{calib._pose[2]}', f'{calib._pose[3]}']
+                    'calib_matrix' : [f'{calib._pose[0]}', f'{calib._pose[1]}', f'{calib._pose[2]}', f'{calib._pose[3]}']
                 },
                 {
                     'resolution' : f'{resolution[0][0], resolution[1][0]}'
@@ -66,12 +93,13 @@ class Optimizer():
             ],
             'base_pose' : [
                 {
-                    'base_matric' : [f'{world_base_pose._pose[0]}', f'{world_base_pose._pose[1]}', f'{world_base_pose._pose[2]}', f'{world_base_pose._pose[3]}']
+                    'base_matrix' : [f'{world_base_pose._pose[0]}', f'{world_base_pose._pose[1]}', f'{world_base_pose._pose[2]}', f'{world_base_pose._pose[3]}']
                 }
             ]
         }
 
-        file_name = 'calib'
+
+        file_name = 'calib_rpy'
         load = yaml.safe_load(f'./unit_test/{file_name}.yaml')
 
         with open(load, 'w') as outfile:
@@ -137,8 +165,6 @@ class Optimizer():
         for i in range(len(self.files)):
             quaternion = g2o.Quaternion(q[i][0][3], q[i][0][0], q[i][0][1], q[i][0][2])
             extr_estimate_from_robot.append(g2o.SE3Quat(q = quaternion, t = t[i][0]))
-            
-
 
         chesboard_point_world_coordinates = (np.mgrid[0:8,0:5,0:1] * 0.02).transpose(1,2,3,0).transpose(1,0,2,3).reshape(-1,3)
 
@@ -247,7 +273,7 @@ class Optimizer():
         else:
             calib, world_base_pose = self.yaml_info(camera_robot_vertex, camera_extrs, measured_tool0_extrs)
 
-        self.save_yaml(calib, world_base_pose)
+        self.save_yaml(calib, world_base_pose, camera_robot_vertex)
 
 def main():
     path = './photo'
