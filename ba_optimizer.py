@@ -10,6 +10,7 @@ import os
 
 import yaml
 
+
 parser = argparse.ArgumentParser()
 parser.add_argument(
     "--noise",
@@ -46,6 +47,7 @@ class Optimizer():
             npzfile = (np.load(f'./{self.path}/{file}'))
             image = npzfile['arr_2']
             gui.image_visualization(current_estimated_pixel[i], image)
+            
 
     def save_yaml(self, calib, world_base_pose):
         npzfile = np.load(f'./{self.path}/{self.files[0]}')
@@ -55,7 +57,7 @@ class Optimizer():
         calib_data = {
             'calib' : [
                 {
-                    'calib_matric' : [f'{calib._pose[0]}', f'{calib._pose[1]}', f'{calib._pose[2]}', f'{calib._pose[3]}']
+                    'calib_matrix' : [f'{calib._pose[0]}', f'{calib._pose[1]}', f'{calib._pose[2]}', f'{calib._pose[3]}']
                 },
                 {
                     'resolution' : f'{resolution[0][0], resolution[1][0]}'
@@ -66,10 +68,11 @@ class Optimizer():
             ],
             'base_pose' : [
                 {
-                    'base_matric' : [f'{world_base_pose._pose[0]}', f'{world_base_pose._pose[1]}', f'{world_base_pose._pose[2]}', f'{world_base_pose._pose[3]}']
+                    'base_matrix' : [f'{world_base_pose._pose[0]}', f'{world_base_pose._pose[1]}', f'{world_base_pose._pose[2]}', f'{world_base_pose._pose[3]}']
                 }
             ]
         }
+
 
         file_name = 'calib'
         load = yaml.safe_load(f'./unit_test/{file_name}.yaml')
@@ -130,15 +133,9 @@ class Optimizer():
             t.append(np.array([npzfile[i]['arr_0']]))
             images.append(npzfile[i]['arr_2'])
 
-
-        n_points_x_axis = 8
-        n_points_y_axis = 5
-
         for i in range(len(self.files)):
             quaternion = g2o.Quaternion(q[i][0][3], q[i][0][0], q[i][0][1], q[i][0][2])
             extr_estimate_from_robot.append(g2o.SE3Quat(q = quaternion, t = t[i][0]))
-            
-
 
         chesboard_point_world_coordinates = (np.mgrid[0:8,0:5,0:1] * 0.02).transpose(1,2,3,0).transpose(1,0,2,3).reshape(-1,3)
 
@@ -146,7 +143,7 @@ class Optimizer():
         current_estimated_pixel = []
         for i in range(len(self.files)):
             current_estimated_pixel.append([])
-        point_id = n_points_x_axis * n_points_y_axis
+        point_id = 40
 
         optimizer = g2o.SparseOptimizer()
         solver = g2o.BlockSolverSE3(g2o.LinearSolverEigenSE3())
@@ -240,22 +237,24 @@ class Optimizer():
         answer = input()
 
         camera_extrs, current_estimated_pixel, camera_robot_vertex, measured_tool0_extrs = self.optimize(answer)
-
         
         if answer == 'y' or answer == 'Y':
             calib, world_base_pose = self.debug(camera_robot_vertex, current_estimated_pixel, camera_extrs, measured_tool0_extrs)
         else:
             calib, world_base_pose = self.yaml_info(camera_robot_vertex, camera_extrs, measured_tool0_extrs)
 
-        self.save_yaml(calib, world_base_pose)
+        self.save_yaml(calib, world_base_pose, camera_robot_vertex)
 
 def main():
     path = './photo'
     files = os.listdir(path)
     files = [f for f in files if '.npz' in f]
-    opt = Optimizer(files, path)
-    opt.main()
-    print(' ')
+    if files == None:
+        print('No files, no optimization')
+    else:
+        opt = Optimizer(files, path)
+        opt.main()
+    print('Done')
 
 if __name__ == "__main__":
     main()
