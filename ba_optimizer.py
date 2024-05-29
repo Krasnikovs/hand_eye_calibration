@@ -243,7 +243,7 @@ class Optimizer():
         else:
             calib, world_base_pose = self.yaml_info(camera_robot_vertex, camera_extrs, measured_tool0_extrs)
 
-        self.save_yaml(calib, world_base_pose, camera_robot_vertex)
+        self.save_yaml(calib, world_base_pose)
 
 def main():
     path = './photo'
