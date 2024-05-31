@@ -24,3 +24,6 @@ class Euler():
             Z = np.arctan2(t3, t4)
 
             return X, Y, Z
+
+    def save_calib_rpy(self, X, Y, Z):
+        pass
