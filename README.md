@@ -1,5 +1,7 @@
 # hand_eye_calibration
-
+```
+git clone --recurse-submodules -j8 https://github.com/Krasnikovs/hand_eye_calibration.git
+```
 ## Requirements
 * C++ requirements
 	* cmake
