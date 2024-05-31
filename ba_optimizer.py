@@ -120,8 +120,16 @@ class Optimizer():
         return calib, world_base_pose
 
     def optimize(self, answer):
-        
         npzfile = []
+
+        for i, file in enumerate(self.files):
+            npzfile.append(np.load(f'./{self.path}/{file}'))
+            if len(npzfile[i]._files) != 5: 
+                print('File doesnt contain needed material')
+                exit()
+
+
+        
         q = []
         t = []
         images = []
@@ -132,6 +140,7 @@ class Optimizer():
             q.append([npzfile[i]['arr_1']])
             t.append(np.array([npzfile[i]['arr_0']]))
             images.append(npzfile[i]['arr_2'])
+            
 
         for i in range(len(self.files)):
             quaternion = g2o.Quaternion(q[i][0][3], q[i][0][0], q[i][0][1], q[i][0][2])
@@ -246,7 +255,7 @@ class Optimizer():
         self.save_yaml(calib, world_base_pose)
 
 def main():
-    path = './photo'
+    path = './photo/10_5'
     files = os.listdir(path)
     files = [f for f in files if '.npz' in f]
     if files == None:
