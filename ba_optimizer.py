@@ -255,7 +255,7 @@ class Optimizer():
         self.save_yaml(calib, world_base_pose)
 
 def main():
-    path = './photo/10_5'
+    path = './photo/'
     files = os.listdir(path)
     files = [f for f in files if '.npz' in f]
     if files == None:
