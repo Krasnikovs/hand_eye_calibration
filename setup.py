@@ -9,9 +9,12 @@ def install(package):
 
 def g2o_build():
     if exists('./g2opy/build'):
+        print('pass')
         pass
     else:
+        print('done')
         mkdir('./g2opy/build')
 
 if __name__ == "__main__":
     install('requirements.txt')
+    g2o_build()
