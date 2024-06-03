@@ -11,7 +11,13 @@ git clone --recurse-submodules -j8 https://github.com/Krasnikovs/hand_eye_calibr
 * ROS2 (https://docs.ros.org/en/iron/Installation.html)
 * [g2opy](https://github.com/Krasnikovs/g2opy.git)
 
-## Setup
+## Installation
 ```
-pip install -r requirements.txt
+python setup.py
+cd g2opy/build
+cmake ..
+make -j8
+cd ..
+sudo python setup.py install
 ```
+Tested under Ubuntu 20.04, Python 3.8+.
