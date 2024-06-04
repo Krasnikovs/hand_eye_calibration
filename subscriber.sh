@@ -1,2 +1,2 @@
 #!/bin/bash
-python3 subscriber.sh
+python3 subscriber.py

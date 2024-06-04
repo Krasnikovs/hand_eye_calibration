@@ -5,6 +5,7 @@ import cv2
 import argparse
 
 from gui import Gui
+from quaternion_to_euler import Euler
 
 import os
 
@@ -253,6 +254,10 @@ class Optimizer():
             calib, world_base_pose = self.yaml_info(camera_robot_vertex, camera_extrs, measured_tool0_extrs)
 
         self.save_yaml(calib, world_base_pose)
+
+        euler = Euler()
+        X, Y, Z = euler.quaternion_to_euler(camera_robot_vertex.estimate().orientation())
+        euler.save_calib_rpy(self, X, Z, Y, calib)
 
 def main():
     path = './photo/'

@@ -1,5 +1,6 @@
 import numpy as np
 
+import yaml
 
 class Euler():
     def quaternion_to_euler(self, Quaternion):
@@ -25,5 +26,31 @@ class Euler():
 
             return X, Y, Z
 
-    def save_calib_rpy(self, X, Y, Z):
-        pass
+    def save_calib_rpy(self, info, X, Y, Z, calib):
+        npzfile = np.load(f'./{info.path}/{info.files[0]}')
+        resolution = npzfile['arr_3']
+        rostopic = npzfile['arr_4']
+
+        calib_data = {
+            'calib' : [
+                {
+                    'calib_pose' : [f'{calib.t()}']
+                },
+                {
+                    'calib_rpy' : [f'{X}, {Y}, {Z}']
+                },
+                {
+                    'resolution' : f'{resolution[0][0], resolution[1][0]}'
+                },
+                {
+                    'ros_topic' : f'{rostopic}'
+                }
+            ]
+        }
+
+
+        file_name = 'calib_rpy'
+        load = yaml.safe_load(f'./unit_test/{file_name}.yaml')
+
+        with open(load, 'w') as outfile:
+            yaml.dump(calib_data, outfile)
