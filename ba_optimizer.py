@@ -4,7 +4,7 @@ import cv2
 
 import argparse
 
-from gui import Gui
+from gui import Gui, InteractiveGui
 from quaternion_to_euler import Euler
 
 import os
@@ -106,6 +106,12 @@ class Optimizer():
         self.show_image(current_estimated_pixel, gui)
 
         return calib, world_base_pose
+    
+    def euler_yaml(self, calib, camera_robot_vertex):
+        euler = Euler()
+        X, Y, Z = euler.quaternion_to_euler(camera_robot_vertex.estimate().orientation())
+        euler.save_calib_rpy(self, X, Z, Y, calib)
+
 
     def yaml_info(self, camera_robot_vertex, camera_extrs, measured_tool0_extrs):
         gui = Gui()
@@ -223,7 +229,7 @@ class Optimizer():
                 optimizer.add_edge(relative_pose)
 
         optimizer.initialize_optimization()
-        if answer == 'y' or answer == 'Y':
+        if answer:
             optimizer.set_verbose(True)
         else:
             optimizer.set_verbose(False)
@@ -242,22 +248,17 @@ class Optimizer():
 
 
     def main(self):
-        
-        print('debug mode(y/n):')
-        answer = input()
+        answer = InteractiveGui.debug_answer()
 
         camera_extrs, current_estimated_pixel, camera_robot_vertex, measured_tool0_extrs = self.optimize(answer)
         
-        if answer == 'y' or answer == 'Y':
+        if answer:
             calib, world_base_pose = self.debug(camera_robot_vertex, current_estimated_pixel, camera_extrs, measured_tool0_extrs)
         else:
             calib, world_base_pose = self.yaml_info(camera_robot_vertex, camera_extrs, measured_tool0_extrs)
 
         self.save_yaml(calib, world_base_pose)
-
-        euler = Euler()
-        X, Y, Z = euler.quaternion_to_euler(camera_robot_vertex.estimate().orientation())
-        euler.save_calib_rpy(self, X, Z, Y, calib)
+        self.euler_yaml(calib, camera_robot_vertex)
 
 def main():
     path = './photo/'
