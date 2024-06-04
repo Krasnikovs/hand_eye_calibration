@@ -15,6 +15,7 @@ git clone --recurse-submodules -j8 https://github.com/Krasnikovs/hand_eye_calibr
 ```
 python setup.py
 cd g2opy/build
+sudo apt install cmake libeigen3-dev
 cmake ..
 make -j8
 cd ..

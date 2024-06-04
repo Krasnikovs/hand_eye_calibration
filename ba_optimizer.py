@@ -11,6 +11,7 @@ import os
 
 import yaml
 
+from tkinter import *
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -248,7 +249,8 @@ class Optimizer():
 
 
     def main(self):
-        answer = InteractiveGui.debug_answer()
+        interactive_gui = InteractiveGui()
+        answer = interactive_gui.debug_answer()
 
         camera_extrs, current_estimated_pixel, camera_robot_vertex, measured_tool0_extrs = self.optimize(answer)
         
