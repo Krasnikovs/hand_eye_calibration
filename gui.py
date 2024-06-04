@@ -4,6 +4,8 @@ import cv2
 import matplotlib.pyplot as plt
 from geometry import Transform
 
+from tkinter import *
+
 class Gui():
 
     def __init__(self):
@@ -40,3 +42,27 @@ class Gui():
 
     def world_id(self):
         return Transform.id()
+    
+class InteractiveGui():
+    def __init__(self):
+        pass
+
+    def debug_answer(self):
+        debug_monitor = Tk()
+
+        label = Label(debug_monitor, text = 'Enter debug mode:')
+
+        positive = Button(debug_monitor, text = 'yes', command = positive())
+        negative = Button(debug_monitor, text = 'no', command = negative())
+
+        debug_monitor.mainloop()
+
+        return self.answer
+
+    def positive(self, debug_monitor):
+        self.answer = True
+        debug_monitor.destroy
+    
+    def negative(self, debug_monitor):
+        self.answer = False
+        debug_monitor.destroy
