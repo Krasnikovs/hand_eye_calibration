@@ -263,7 +263,7 @@ class Optimizer():
         self.euler_yaml(calib, camera_robot_vertex)
 
 def main():
-    path = './photo/'
+    path = './photo/31_5'
     files = os.listdir(path)
     files = [f for f in files if '.npz' in f]
     if files == None:

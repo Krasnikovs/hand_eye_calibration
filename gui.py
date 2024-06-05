@@ -49,12 +49,12 @@ class InteractiveGui():
         self.debug_monitor = Tk()
 
         self.debug_monitor.title('Debug')
-        self.debug_monitor.geometry('350x200')
+        self.debug_monitor.geometry('150x50')
 
         label = Label(self.debug_monitor, text = 'Enter debug mode:')
 
-        positive_answer = Button(self.debug_monitor, text = 'yes', command = self.positive).pack()
-        negative_answer = Button(self.debug_monitor, text = 'no', command = self.negative).pack()
+        positive_answer = Button(self.debug_monitor, text = 'yes', command = self.positive).grid(row = 1, column = 1, padx = 10, pady = 10)
+        negative_answer = Button(self.debug_monitor, text = 'no', command = self.negative).grid(row = 1, column = 2, padx = 10, pady = 10)
 
         self.debug_monitor.mainloop()
 
