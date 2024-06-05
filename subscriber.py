@@ -68,7 +68,7 @@ class PoseSubscriber(Node):
             )  
         except TransformException as ex:
             print(f'Error:{ex}')
-            raise ex
+            # raise ex
         return t
 
 
@@ -80,7 +80,7 @@ def save_npz(t, image_sub, image_data_sub):
     bridge = CvBridge()
     image = bridge.imgmsg_to_cv2(image_sub.msg, desired_encoding='bgr8')
     
-    image_resolution = list([[image_sub.msg.width], [image_sub.msg.height]])
+    image_resolution = list([[image_data_sub.msg.width], [image_data_sub.msg.height]])
     image_ros_topic = '/color/image_raw'
     
     np.savez(f'./photo/test_{image_sub.msg.header.stamp.sec}', vector, quaternion, image, image_resolution, image_ros_topic) 

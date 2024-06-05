@@ -11,6 +11,7 @@ import os
 
 import yaml
 
+from tkinter import *
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -248,7 +249,8 @@ class Optimizer():
 
 
     def main(self):
-        answer = InteractiveGui.debug_answer()
+        interactive_gui = InteractiveGui()
+        answer = interactive_gui.debug_answer()
 
         camera_extrs, current_estimated_pixel, camera_robot_vertex, measured_tool0_extrs = self.optimize(answer)
         
@@ -261,7 +263,7 @@ class Optimizer():
         self.euler_yaml(calib, camera_robot_vertex)
 
 def main():
-    path = './photo/'
+    path = './photo/31_5'
     files = os.listdir(path)
     files = [f for f in files if '.npz' in f]
     if files == None:

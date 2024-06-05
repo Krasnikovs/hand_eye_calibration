@@ -44,25 +44,26 @@ class Gui():
         return Transform.id()
     
 class InteractiveGui():
-    def __init__(self):
-        pass
 
     def debug_answer(self):
-        debug_monitor = Tk()
+        self.debug_monitor = Tk()
 
-        label = Label(debug_monitor, text = 'Enter debug mode:')
+        self.debug_monitor.title('Debug')
+        self.debug_monitor.geometry('150x50')
 
-        positive = Button(debug_monitor, text = 'yes', command = positive())
-        negative = Button(debug_monitor, text = 'no', command = negative())
+        label = Label(self.debug_monitor, text = 'Enter debug mode:')
 
-        debug_monitor.mainloop()
+        positive_answer = Button(self.debug_monitor, text = 'yes', command = self.positive).grid(row = 1, column = 1, padx = 10, pady = 10)
+        negative_answer = Button(self.debug_monitor, text = 'no', command = self.negative).grid(row = 1, column = 2, padx = 10, pady = 10)
+
+        self.debug_monitor.mainloop()
 
         return self.answer
 
-    def positive(self, debug_monitor):
+    def positive(self):
         self.answer = True
-        debug_monitor.destroy
+        self.debug_monitor.destroy()
     
-    def negative(self, debug_monitor):
+    def negative(self):
         self.answer = False
-        debug_monitor.destroy
+        self.debug_monitor.destroy()
