@@ -41,14 +41,12 @@ class StaticFramePublisher(Node):
 
         self.tf_static_broadcaster = StaticTransformBroadcaster(self)
 
-        # Publish static transforms once at startup
         self.make_transforms()
 
     def make_transforms(self):
         t = TransformStamped()
 
         t.header.stamp = self.get_clock().now().to_msg()
-        # t.header.frame_id = 'realsense_on_robot_calib'
         t.header.frame_id = 'realsense_color_calib'
         t.child_frame_id = 'camera_depth_optical_frame'
 
@@ -60,18 +58,12 @@ class StaticFramePublisher(Node):
         t.transform.translation.x = extrs_depth.t[0]
         t.transform.translation.y = extrs_depth.t[1]
         t.transform.translation.z = extrs_depth.t[2]
-        # quat = quaternion_from_euler(
-        #     float(0.0147), float(3.1194), float(-0.0213))
         
         t.transform.rotation.x = extrs_depth.orientation().x()
         t.transform.rotation.y = extrs_depth.orientation().y()
         t.transform.rotation.z = extrs_depth.orientation().z()
         t.transform.rotation.w = extrs_depth.orientation().w()
 
-        # t.transform.rotation.x = 0.0
-        # t.transform.rotation.y = 0.0
-        # t.transform.rotation.z = 0.0
-        # t.transform.rotation.w = 1.0
         self.tf_static_broadcaster.sendTransform(t)
 
 
@@ -87,10 +79,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-# 384.91 318.6666 0.0 384.9136 233.2199 0.0
-
-# ros2 run tf2_ros static_transform_publisher 0.0 0.0 0.0 -0.500, 0.500, -0.500, 0.500 realsense_on_robot_calib camera_depth_optical_frame
-
-# - Translation: [0.000, 0.000, 0.000]
-# - Rotation: in Quaternion [-0.500, 0.500, -0.500, 0.500]
