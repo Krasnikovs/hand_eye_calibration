@@ -4,13 +4,12 @@ import cv2
 
 import argparse
 
-from gui import Gui
+from gui import Gui, InteractGui
 from quaternion_to_euler import Euler
 
 import os
 
 import yaml
-
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -47,7 +46,7 @@ class Optimizer():
         for i, file in enumerate(self.files):
             npzfile = (np.load(f'./{self.path}/{file}'))
             image = npzfile['arr_2']
-            gui.image_visualization(current_estimated_pixel[i], image)
+            gui.image_visualization(current_estimated_pixel[i], image, file)
             
 
     def save_yaml(self, calib, world_base_pose):
@@ -223,7 +222,7 @@ class Optimizer():
                 optimizer.add_edge(relative_pose)
 
         optimizer.initialize_optimization()
-        if answer == 'y' or answer == 'Y':
+        if answer:
             optimizer.set_verbose(True)
         else:
             optimizer.set_verbose(False)
@@ -243,21 +242,24 @@ class Optimizer():
 
     def main(self):
         
-        print('debug mode(y/n):')
-        answer = input()
+        interactive_gui = InteractGui()
+        answer = interactive_gui.debug_requesite()
 
         camera_extrs, current_estimated_pixel, camera_robot_vertex, measured_tool0_extrs = self.optimize(answer)
         
-        if answer == 'y' or answer == 'Y':
+        if answer:
             calib, world_base_pose = self.debug(camera_robot_vertex, current_estimated_pixel, camera_extrs, measured_tool0_extrs)
         else:
             calib, world_base_pose = self.yaml_info(camera_robot_vertex, camera_extrs, measured_tool0_extrs)
+
+        extrs_depth = g2o.Isometry3d([[-0.9998, 0.0156, -0.0039, 0.0149], [-0.0156, -0.9998, -0.0387, 0.0006], [0.0038, 0.004, 0.9999, 0.0002], [0, 0, 0, 1]])
 
         self.save_yaml(calib, world_base_pose)
 
         euler = Euler()
         X, Y, Z = euler.quaternion_to_euler(camera_robot_vertex.estimate().orientation())
         euler.save_calib_rpy(self, X, Z, Y, calib)
+        euler.save_calib_quaternion(self, camera_robot_vertex.estimate().orientation(), calib)
 
 def main():
     path = './photo/'

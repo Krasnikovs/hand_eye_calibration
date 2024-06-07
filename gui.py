@@ -4,6 +4,8 @@ import cv2
 import matplotlib.pyplot as plt
 from geometry import Transform
 
+from tkinter import *
+
 class Gui():
 
     def __init__(self):
@@ -27,11 +29,12 @@ class Gui():
         transform.draw_on_ax(self._rbax, c_i=c_i)
         self._rbax.set_aspect('equal')
 
-    def image_visualization(self, current_estimated_pixel, image):
+    def image_visualization(self, current_estimated_pixel, image, file):
+        cv2.destroyAllWindows()
         for estimated_pixel in current_estimated_pixel:
             marked_image = cv2.circle(image, estimated_pixel.astype(int), 0, (0, 0, 255), 2)
 
-        cv2.imshow('img_1', marked_image)
+        cv2.imshow(file, marked_image)
         cv2.waitKey(25000)
 
     def transform(self, data):
@@ -40,3 +43,31 @@ class Gui():
 
     def world_id(self):
         return Transform.id()
+
+class InteractGui():
+    
+    def debug_requesite(self):
+        self.debug_monitor = Tk()
+
+        self.debug_monitor.title('Debug')
+        self.debug_monitor.geometry('150x50')
+
+        label = Label(self.debug_monitor, text = 'Enter debug mode:')
+
+        positive_answer = Button(self.debug_monitor, text = 'yes', command = self.positive).grid(row = 1, column = 1, padx = 10, pady = 10)
+        negative_answer = Button(self.debug_monitor, text = 'no', command = self.negative).grid(row = 1, column = 2, padx = 10, pady = 10)
+
+        self.debug_monitor.mainloop()
+
+        return self.answer
+
+    def positive(self):
+        self.answer = True
+        self.debug_monitor.destroy()
+    
+    def negative(self):
+        self.answer = False
+        self.debug_monitor.destroy()
+
+
+        
